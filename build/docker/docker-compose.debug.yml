@@ -1,0 +1,437 @@
+version: "3.4"
+services:
+  client_api_proxy:
+    hostname: client_api_proxy
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2345",
+      "--api-version=2",
+      "--log",
+      "./cmd/client-api-proxy/main.go",
+      "--",
+      "--bind-address=:8008",
+      "--client-api-server-url=http://client_api:7771",
+      "--sync-api-server-url=http://sync_api:7773",
+      "--media-api-server-url=http://media_api:7774",
+      "--public-rooms-api-server-url=http://public_rooms_api:7775",
+      "--key-server-url=http://key_server:7779",
+      "--tls-cert=/etc/dendrite/server.crt",
+      "--tls-key=/etc/dendrite/server.key"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    depends_on:
+      - sync_api
+      - client_api
+      - media_api
+      - public_rooms_api
+    ports:
+      - "8008:8008"
+      - "2345:2345"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  client_api:
+    hostname: client_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2346",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-client-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+      - room_server
+    networks:
+      - internal
+    ports:
+      - "2346:2346"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  media_api:
+    hostname: media_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2347",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-media-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2347:2347"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  public_rooms_api:
+    hostname: public_rooms_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2348",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-public-rooms-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2348:2348"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  sync_api:
+    hostname: sync_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2349",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-sync-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2349:2349"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  room_server:
+    hostname: room_server
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2350",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-room-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2350:2350"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  edu_server:
+    hostname: edu_server
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2351",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-edu-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2351:2351"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  federation_api_proxy:
+    hostname: federation_api_proxy
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2352",
+      "--api-version=2",
+      "--log",
+      "./cmd/federation-api-proxy/main.go",
+      "--",
+      "--bind-address=:8448",
+      "--federation-api-url=http://federation_api:7772",
+      "--media-api-server-url=http://media_api:7774",
+      "--tls-cert=/etc/dendrite/server.crt",
+      "--tls-key=/etc/dendrite/server.key"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    depends_on:
+      - federation_api
+      - federation_sender
+      - media_api
+    networks:
+      - internal
+    ports:
+      - "8448:8448"
+      - "2352:2352"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  federation_api:
+    hostname: federation_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2353",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-federation-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2353:2353"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  federation_sender:
+    hostname: federation_sender
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2354",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-federation-sender-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2354:2354"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+      
+  key_server:
+    hostname: key_server
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2355",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-key-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+        - internal
+    ports:
+      - "2355:2355"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  server_key_api:
+    hostname: server_key_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2356",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-server-key-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    ports:
+      - "2356:2356"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  user_api:
+    hostname: user_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2357",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-user-api-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+        - ./config:/etc/dendrite
+    networks:
+        - internal
+    ports:
+      - "2357:2357"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+  appservice_api:
+    hostname: appservice_api
+    image: matrixdotorg/dendrite:debug
+    command: [
+      "dlv",
+      "debug",
+      "--headless",
+      "--continue",
+      "--accept-multiclient",
+      "--listen=:2358",
+      "--api-version=2",
+      "--log",
+      "./cmd/dendrite-appservice-server/main.go",
+      "--",
+      "--config=/etc/dendrite/dendrite.yaml"
+    ]
+    volumes:
+      - ./config:/etc/dendrite
+    networks:
+      - internal
+    depends_on:
+      - room_server
+      - user_api
+    ports:
+      - "2358:2358"
+    security_opt:
+      - "apparmor:unconfined"
+    cap_add:
+      - "SYS_PTRACE"
+    tty: true
+    stdin_open: true
+
+networks:
+  internal:
+    attachable: true

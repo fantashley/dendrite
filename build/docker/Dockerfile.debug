@@ -1,0 +1,15 @@
+FROM docker.io/golang:1.13.7-alpine3.11
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN apk --update --no-cache add bash build-base git \
+    && go get github.com/go-delve/delve/cmd/dlv
+
+VOLUME /etc/dendrite
+WORKDIR $GOPATH/src/dendrite
+
+COPY . .
+
+RUN go get -d -v ./cmd/...
+RUN go build -v ./cmd/...
