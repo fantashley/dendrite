@@ -11,6 +11,8 @@ services:
       POSTGRES_USER: dendrite
     networks:
       - internal
+    ports:
+      - "5432:5432"
 
   zookeeper:
     hostname: zookeeper

@@ -8,7 +8,10 @@ services:
       "--client-api-server-url=http://client_api:7771",
       "--sync-api-server-url=http://sync_api:7773",
       "--media-api-server-url=http://media_api:7774",
-      "--public-rooms-api-server-url=http://public_rooms_api:7775"
+      "--public-rooms-api-server-url=http://public_rooms_api:7775",
+      "--key-server-url=http://key_server:7779",
+      "--tls-cert=/etc/dendrite/server.crt",
+      "--tls-key=/etc/dendrite/server.key"
     ]
     volumes:
       - ./config:/etc/dendrite
@@ -95,7 +98,9 @@ services:
     command: [
       "--bind-address=:8448",
       "--federation-api-url=http://federation_api:7772",
-      "--media-api-server-url=http://media_api:7774"
+      "--media-api-server-url=http://media_api:7774",
+      "--tls-cert=/etc/dendrite/server.crt",
+      "--tls-key=/etc/dendrite/server.key"
     ]
     volumes:
       - ./config:/etc/dendrite
