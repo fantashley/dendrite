@@ -1,29 +1,46 @@
 version: "3.4"
 services:
-  client_api_proxy:
-    hostname: client_api_proxy
-    image: matrixdotorg/dendrite:clientproxy
-    command: [
-      "--bind-address=:8008",
-      "--client-api-server-url=http://client_api:7771",
-      "--sync-api-server-url=http://sync_api:7773",
-      "--media-api-server-url=http://media_api:7774",
-      "--public-rooms-api-server-url=http://public_rooms_api:7775",
-      "--key-server-url=http://key_server:7779",
-      "--tls-cert=/etc/dendrite/server.crt",
-      "--tls-key=/etc/dendrite/server.key"
-    ]
-    volumes:
-      - ./config:/etc/dendrite
-    networks:
-      - internal
-    depends_on:
-      - sync_api
-      - client_api
-      - media_api
-      - public_rooms_api
+  traefik:
+    image: traefik:v2.2.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.dendrite-client.address=:8008"
+      - "--entrypoints.dendrite-federation.address=:8448"
+      - "--providers.file.directory=/configuration/"
+      - "--providers.file.watch=true"
     ports:
+      - "8080:8080"
       - "8008:8008"
+      - "8448:8448"
+    volumes:
+      - ./config/traefik:/configuration
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+# client_api_proxy:
+#   hostname: client_api_proxy
+#   image: matrixdotorg/dendrite:clientproxy
+#   command: [
+#     "--bind-address=:8008",
+#     "--client-api-server-url=http://client_api:7771",
+#     "--sync-api-server-url=http://sync_api:7773",
+#     "--media-api-server-url=http://media_api:7774",
+#     "--public-rooms-api-server-url=http://public_rooms_api:7775",
+#     "--key-server-url=http://key_server:7779",
+#     "--tls-cert=/etc/dendrite/server.crt",
+#     "--tls-key=/etc/dendrite/server.key"
+#   ]
+#   volumes:
+#     - ./config:/etc/dendrite
+#   networks:
+#     - internal
+#   depends_on:
+#     - sync_api
+#     - client_api
+#     - media_api
+#     - public_rooms_api
+#   ports:
+#     - "8008:8008"
 
   client_api:
     hostname: client_api
@@ -36,6 +53,9 @@ services:
       - room_server
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.client_api.tls=true"
+      - "traefik.http.routers.client_api.rule=Host(`ashley-nuc`)"
 
   media_api:
     hostname: media_api
@@ -47,6 +67,9 @@ services:
       - ./config:/etc/dendrite
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.media_api.tls=true"
+      - "traefik.http.routers.media_api.rule=Host(`ashley-nuc`) && PathPrefix(`/_matrix/media/`)"
 
   public_rooms_api:
     hostname: public_rooms_api
@@ -58,6 +81,9 @@ services:
       - ./config:/etc/dendrite
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.public_rooms_api.tls=true"
+      - "traefik.http.routers.public_rooms_api.rule=Host(`ashley-nuc`) && PathPrefix(`/_matrix/client/r0/publicRooms`)"
 
   sync_api:
     hostname: sync_api
@@ -69,6 +95,9 @@ services:
       - ./config:/etc/dendrite
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.sync_api.tls=true"
+      - "traefik.http.routers.sync_api.rule=Host(`ashley-nuc`) && PathPrefix(`/_matrix/client/r0/sync`)"
 
   room_server:
     hostname: room_server
@@ -80,6 +109,9 @@ services:
       - ./config:/etc/dendrite
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.room_server.tls=true"
+      - "traefik.http.routers.sync_api.rule=Host(`ashley-nuc`) && PathPrefix(`/_matrix/client/r0/sync`)"
 
   edu_server:
     hostname: edu_server
@@ -91,27 +123,29 @@ services:
       - ./config:/etc/dendrite
     networks:
       - internal
+    labels:
+      - "traefik.http.routers.client_api.tls=true"
 
-  federation_api_proxy:
-    hostname: federation_api_proxy
-    image: matrixdotorg/dendrite:federationproxy
-    command: [
-      "--bind-address=:8448",
-      "--federation-api-url=http://federation_api:7772",
-      "--media-api-server-url=http://media_api:7774",
-      "--tls-cert=/etc/dendrite/server.crt",
-      "--tls-key=/etc/dendrite/server.key"
-    ]
-    volumes:
-      - ./config:/etc/dendrite
-    depends_on:
-      - federation_api
-      - federation_sender
-      - media_api
-    networks:
-      - internal
-    ports:
-      - "8448:8448"
+# federation_api_proxy:
+#   hostname: federation_api_proxy
+#   image: matrixdotorg/dendrite:federationproxy
+#   command: [
+#     "--bind-address=:8448",
+#     "--federation-api-url=http://federation_api:7772",
+#     "--media-api-server-url=http://media_api:7774",
+#     "--tls-cert=/etc/dendrite/server.crt",
+#     "--tls-key=/etc/dendrite/server.key"
+#   ]
+#   volumes:
+#     - ./config:/etc/dendrite
+#   depends_on:
+#     - federation_api
+#     - federation_sender
+#     - media_api
+#   networks:
+#     - internal
+#   ports:
+#     - "8448:8448"
 
   federation_api:
     hostname: federation_api

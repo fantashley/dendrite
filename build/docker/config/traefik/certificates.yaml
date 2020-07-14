@@ -1,0 +1,4 @@
+tls:
+  certificates:
+    - certFile: /etc/traefik/ashley-nuc.crt
+      keyFile: /etc/traefik/ashley-nuc.key
